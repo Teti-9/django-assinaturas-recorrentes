@@ -1,6 +1,6 @@
 ## Django - Gerenciamento de Alunos e Matrículas.
 
-Projeto com integração com a EFI Bank API para gerenciamento de assinaturas recorrentes.
+Projeto integrado com a EFI Bank API para gerenciamento de assinaturas recorrentes.
 
 ## Funcionalidades da API
 
@@ -9,6 +9,8 @@ Projeto com integração com a EFI Bank API para gerenciamento de assinaturas re
 - 📌 **Matrículas:** CRUD (Criar, Ler, Atualizar, Deletar) de matrículas.  
 
 - 📌 **Validações:** Valida CPF, CEP, Telefone, Email e utiliza da VIACEP Api para preencher dados residencias através do CEP.  
+
+- 📌 **Efí Bank:** Criação e pagamento de assinaturas recorrentes.  
 
 ## 🛠️ Instalação e Configuração
 
