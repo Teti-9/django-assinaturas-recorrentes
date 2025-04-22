@@ -1,0 +1,5 @@
+.env
+django-admin.exe
+__pycache__
+.idea
+homologacao-741557-Django_assinatura_academias_cert.pem
