@@ -41,7 +41,7 @@ class Matricula(models.Model):
         verbose_name="status da matrícula")
     
     def __str__(self):
-        return f"{self.aluno}"
+        return f"{self.aluno} Plano: {Precos.get_text(Precos(self.tipo_do_plano))}."
 
     def save(self, *args, **kwargs):
         self.plano = plano_efi_id(self.tipo_do_plano)
@@ -68,6 +68,9 @@ class GerarPagamento(models.Model):
         blank=True, 
         default=None, 
         verbose_name='assinatura_efi_id')
+    
+    def __str__(self):
+        return f"{self.matricula}"
 
     def save(self, *args, **kwargs):
         if not self.pk:

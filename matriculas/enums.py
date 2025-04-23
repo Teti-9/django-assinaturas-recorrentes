@@ -20,3 +20,11 @@ class Precos(models.IntegerChoices):
             cls.SEMESTRAL: 99,
             cls.ANUAL: 120
         }.get(value)
+    
+    @classmethod
+    def get_text(cls, value):
+        return {
+            cls.TRIMESTRAL: 'Trimestral - 90 dias',
+            cls.SEMESTRAL: 'Semestral - 180 dias',
+            cls.ANUAL: 'Anual - 365 dias'
+        }.get(value)
