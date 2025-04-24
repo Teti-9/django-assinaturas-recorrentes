@@ -1,7 +1,7 @@
 import json
 from django.views import View
 from django.http import JsonResponse
-from .forms import MatriculasForm, GerarPagamentosForm, PagamentoForm
+from .forms import MatriculasForm, PagamentoForm, CancelarMatriculaForm
 from .models import Alunos, Matricula
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -56,28 +56,6 @@ class Matriculas(View):
                 'status': 'Success',
                 'message': 'Matrícula deletada!'
             })  
-    
-@method_decorator(csrf_exempt, name='dispatch')
-class GerarPagamentos(View):
-    pagamento_form = GerarPagamentosForm
-
-    def post(self, request):
-        data = json.loads(request.body)
-        form = self.pagamento_form(data)
-
-        if form.is_valid():
-            form.save()
-            return JsonResponse({
-                    'status': 'Success',
-                    'message': 'Pagamento gerado!',
-                    'erros': form.errors,
-                })
-        
-        return JsonResponse({
-                'status': 'Error',
-                'message': 'Dados inválidos!',
-                'erros': form.errors,
-            }, status=400)   
 
 @method_decorator(csrf_exempt, name='dispatch')
 class Pagamentos(View):
@@ -100,3 +78,25 @@ class Pagamentos(View):
                 'message': 'Dados inválidos!',
                 'erros': form.errors,
             }, status=400)
+    
+@method_decorator(csrf_exempt, name='dispatch')
+class CancelarMatricula(View):
+    cancelamento_form = CancelarMatriculaForm
+
+    def post(self, request):
+        data = json.loads(request.body)
+        form = self.cancelamento_form(data)
+
+        if form.is_valid():
+            form.save()
+            return JsonResponse({
+                    'status': 'Success',
+                    'message': 'Pagamento gerado!',
+                    'erros': form.errors,
+                })
+        
+        return JsonResponse({
+                'status': 'Error',
+                'message': 'Dados inválidos!',
+                'erros': form.errors,
+            }, status=400)   

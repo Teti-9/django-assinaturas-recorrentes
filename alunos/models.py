@@ -43,6 +43,10 @@ class Alunos(models.Model):
     
     def __str__(self):
         return f"{self.nome} (ID: {self.id})"
+    
+    def save(self, *args, **kwargs):
+        self.nome = self.nome.capitalize()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = "Alunos"
