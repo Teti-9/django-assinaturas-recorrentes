@@ -20,6 +20,17 @@ class Cadastro(View):
             fields=['nome', 'cpf', 'email', 'data_de_nascimento', 'telefone', 'endereco_cep']
         )
 
+        if hasattr(aluno, 'matricula'):
+            aluno_dict['matricula'] = {
+                **model_to_dict(
+                    aluno.matricula,
+                    fields=['aluno', 'tipo_do_plano', 'status_da_matricula', 'vencimento_da_matricula']
+                ),
+                'data_da_matricula': aluno.matricula.data_da_matricula
+            }
+        else:
+            aluno_dict['matricula'] = 'Nenhuma matrícula associada ao aluno.'
+
         return JsonResponse(aluno_dict)
 
     def post(self, request):

@@ -68,3 +68,11 @@ def cancelar_assinatura(assinatura_id):
     }
 
     EfiPay(EFI_CONFIG).cancel_subscription(params=params)
+
+def info_assinatura(assinatura_id):
+    params = {
+    'id': assinatura_id # ID da assinatura.
+    }
+
+    response = EfiPay(EFI_CONFIG).detail_subscription(params=params)
+    return response

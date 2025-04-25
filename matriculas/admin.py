@@ -3,8 +3,8 @@ from matriculas.models import Matricula, Pagamento, CancelarMatricula
 
 @admin.register(Matricula)
 class MatriculasAdmin(admin.ModelAdmin):
-    list_display = ('aluno', 'tipo_do_plano', 'status_da_matricula', 'data_da_matricula', 'vencimento_da_matricula')
-    exclude = ('assinatura', 'vencimento_da_matricula', 'status_da_matricula')
+    list_display = ('aluno', 'tipo_do_plano', 'status_da_matricula', 'data_da_matricula', 'vencimento_da_matricula', 'assinatura')
+    exclude = ('assinatura', 'vencimento_da_matricula', 'status_da_matricula', 'data_da_matricula')
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -16,6 +16,9 @@ class PagamentoAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+    
+    def has_change_permission(self, request, obj =None):
+        return False
 
 @admin.register(CancelarMatricula)
 class CancelamentosAdmin(admin.ModelAdmin):
@@ -23,4 +26,7 @@ class CancelamentosAdmin(admin.ModelAdmin):
     exclude = ('data_do_cancelamento',)
 
     def has_delete_permission(self, request, obj=None):
+        return False
+    
+    def has_change_permission(self, request, obj =None):
         return False
