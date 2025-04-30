@@ -1,23 +1,23 @@
-## Django - Gerenciamento de Alunos e Matrículas.
+## Django - Gerenciamento de Alunos, Matrículas e Assinaturas.
 
-Projeto integrado com a EFI Bank API para gerenciamento de assinaturas recorrentes.
+Projeto integrado com a EFI Bank API para gerenciamento de alunos, matrículas e assinaturas recorrentes.
 
 ## Funcionalidades da API
 
-- 📌 **Alunos:** CRUD (Criar, Ler, Atualizar, Deletar) de alunos.  
+- 📌 **Alunos:** CRUD (Criar, Ler, Atualizar e Deletar) de alunos.  
 
-- 📌 **Matrículas:** CRUD (Criar, Ler, Atualizar, Deletar) de matrículas.  
+- 📌 **Matrículas:** CRUD (Criar, Ler, Atualizar e Deletar) de matrículas.  
 
 - 📌 **Validações:** Valida CPF, CEP, Telefone, Email e utiliza da VIACEP Api para preencher dados residencias através do CEP.  
 
-- 📌 **Efí Bank:** Criação e pagamento de assinaturas recorrentes.  
+- 📌 **Efí Bank:** Criação, pagamento e cancelamento de assinaturas recorrentes.  
 
 ## 🛠️ Instalação e Configuração
 
 ### 🔹 Instalação Local (SQLite)
 ```
-git clone https://github.com/Teti-9/django-gerenciamento.git
-cd django-gerenciamento
+git clone https://github.com/Teti-9/django-assinaturas-recorrentes.git
+cd django-assinaturas-recorrentes
 pip install -r requirements.txt
 python manage.py migrate
 
@@ -27,24 +27,42 @@ CLIENT = "Client_Id"
 SECRET = "Client_Secret"
 CERTIFICATE = "O Certificado deve ser convertido para .PEM para funcionar."
 
-* https://github.com/efipay/conversor-p12-efi?tab=readme-ov-file
+- Documentação:
 * https://dev.efipay.com.br/docs/api-pix/credenciais/
+* https://github.com/efipay/conversor-p12-efi?tab=readme-ov-file
 
 Rode a aplicação na pasta raíz do projeto:
+
 python manage.py runserver
 ```
 
-## 👨‍💻 Interface Admin
+## 👨‍💻 Homologação
 ```
-- Para acessar o painel admin que possui todas operações, crie um super usuário na pasta raiz do projeto:
+* Postman, Insomnia, Thunder Client, Etc.
+
+Exemplo de rota POST Aluno:
+
+- Cadastro
+    - Endpoint: /cadastro
+    - Method: POST
+    - Request Body: Json
+{
+    "nome": "João",
+    "cpf": "56242009943",
+    "email": "joao@email.com",
+    "data_de_nascimento": "19/02/1992",
+    "telefone": "44123456789",
+    "endereco_cep": "12345678"
+}
+
+* Painel Admin (Interface Front-end e Operações CRUD.)
+
+Na pasta do projeto:
+
 python manage.py createsuperuser
 python manage.py runserver
 
 Acesse:
-http://localhost:8000/admin
-```
 
-## 📥 Homologação
-```
-Todo ambiente está configurado em homologação com dados falsos inseridos para que tests possam ser feitos imediatamente.
+http://localhost:8000/admin
 ```

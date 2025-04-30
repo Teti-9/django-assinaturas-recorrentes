@@ -28,3 +28,7 @@ class Precos(models.IntegerChoices):
             cls.SEMESTRAL: 'Semestral - 180 dias',
             cls.ANUAL: 'Anual - 365 dias'
         }.get(value)
+    
+class MetodoPagamento(models.TextChoices):
+    CARTAO = 'credit_card', 'Cartão de Crédito'
+    BOLETO = 'banking_billet', 'Boleto Bancário'

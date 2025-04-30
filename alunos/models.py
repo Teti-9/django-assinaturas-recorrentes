@@ -1,9 +1,15 @@
 from django.db import models
+from django.core.validators import RegexValidator
 from .utils import validar_cpf, validar_cep, validar_telefone, validar_email
 
 class Alunos(models.Model):
     nome = models.CharField(
-        max_length=255, 
+        max_length=255,
+        validators=[RegexValidator(
+            regex='[a-zA-Z]',
+            message='Nome Inválido.'
+        )
+        ],
         verbose_name="Nome do Aluno")
     
     cpf = models.CharField(

@@ -2,11 +2,11 @@ import json
 from django.views import View
 from django.http import JsonResponse
 from .forms import MatriculasForm, PagamentoForm, CancelarMatriculaForm
-from .models import Alunos, Matricula, Pagamento, CancelarMatricula
+from .models import Pagamento, CancelarMatricula
+from .responses import retornar_data
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.forms.models import model_to_dict
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -40,17 +40,7 @@ class Pagamentos(View):
 
         matricula = pagamento.pagamento
 
-        response_data = {
-            'pagamento_id': pagamento.id,
-            'data_do_pagamento': pagamento.data_do_pagamento,
-            'matricula': {
-                'id': matricula.id,
-                'aluno': model_to_dict(matricula.aluno) if hasattr(matricula, 'aluno') else None,
-                'tipo_do_plano': matricula.tipo_do_plano,
-                'status_da_matricula': matricula.status_da_matricula,
-                'vencimento_da_matricula': matricula.vencimento_da_matricula
-            }
-        }
+        response_data = retornar_data('pagamento', pagamento, matricula)
 
         return JsonResponse(response_data)
 
@@ -81,17 +71,7 @@ class CancelarMatriculas(View):
 
         matricula = cancelamento.cancelamento
 
-        response_data = {
-            'cancelamento_id': cancelamento.id,
-            'data_do_cancelamento': cancelamento.data_do_cancelamento,
-            'matricula': {
-                'id': matricula.id,
-                'aluno': model_to_dict(matricula.aluno) if hasattr(matricula, 'aluno') else None,
-                'tipo_do_plano': matricula.tipo_do_plano,
-                'status_da_matricula': matricula.status_da_matricula,
-                'vencimento_da_matricula': matricula.vencimento_da_matricula
-            }
-        }
+        response_data = retornar_data('cancelamento', cancelamento, matricula)
 
         return JsonResponse(response_data)
 
