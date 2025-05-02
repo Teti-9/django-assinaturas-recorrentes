@@ -2,6 +2,7 @@ from efipay import EfiPay
 from core.settings import EFI_CONFIG
 from matriculas.enums import Precos
 from brutils.cep import remove_symbols
+from .exceptions import *
 
 class AssinaturaService:
     def __init__(self):
@@ -20,7 +21,7 @@ class AssinaturaService:
             
             return (plano_id, assinatura_id)
         
-        raise ValueError("Já existe uma assinatura ativa para este usuário")
+        raise AssinaturaExiste("Já existe uma assinatura ativa para este usuário")
     
     def pagar_assinatura(self, assinatura_id, pagamento, endereco, numero):
         body = self._metodo_de_pagamento(pagamento, endereco, numero)
@@ -34,7 +35,7 @@ class AssinaturaService:
             EfiPay(EFI_CONFIG).define_subscription_pay_method(params=params, body=body)
             return True
 
-        raise ValueError("Não é possível pagar esta assinatura.")
+        raise ErroPagamento("Não é possível pagar esta assinatura.")
     
     def cancelar_assinatura(self, assinatura_id):
         status = self._assinatura_status(assinatura_id)
@@ -47,7 +48,7 @@ class AssinaturaService:
             EfiPay(EFI_CONFIG).cancel_subscription(params=params)
             return True
 
-        raise ValueError("Essa assinatura já está cancelada.")
+        raise AssinaturaCancelada("Essa assinatura já está cancelada.")
     
     def _criar_plano(self, plano):
         body_plan = {

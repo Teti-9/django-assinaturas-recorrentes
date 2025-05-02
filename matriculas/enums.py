@@ -32,3 +32,10 @@ class Precos(models.IntegerChoices):
 class MetodoPagamento(models.TextChoices):
     CARTAO = 'credit_card', 'Cartão de Crédito'
     BOLETO = 'banking_billet', 'Boleto Bancário'
+
+class StatusPagamento(models.TextChoices):
+    PENDENTE = 'pendente', 'Pagamento Pendente'
+    APROVADO = 'aprovado', 'Pagamento Aprovado'
+    RECUSADO = 'recusado', 'Pagamento Recusado'
+    ESTORNADO = 'estornado', 'Pagamento Estornado'
+    REEMBOLSADO = 'reembolsado', 'Pagamento Reembolsado'

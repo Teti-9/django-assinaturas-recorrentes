@@ -2,7 +2,8 @@ from django.db import models, transaction
 from django.utils import timezone
 from alunos.models import Alunos
 from .services import AssinaturaService
-from matriculas.enums import Precos, MetodoPagamento
+from .exceptions import *
+from matriculas.enums import Precos, MetodoPagamento, StatusPagamento
 from datetime import timedelta
 from alunos.utils import checar_aluno_matriculado
 
@@ -55,33 +56,12 @@ class Matricula(models.Model):
                 
                 super().save(*args, **kwargs)
 
-        except ValueError as e:
-            error_msg = f"Já existe uma assinatura para {self.aluno}, cancele antes de criar outra."
-            raise ValueError(error_msg) from e
+        except AssinaturaExiste as e:
+            error_msg = f"Já existe uma assinatura ativa ou pendente para {self.aluno}."
+            raise AssinaturaExiste(error_msg) from e
 
-        except Exception as e:
-            print(e)
-
-    def cancelar_assinatura_matriculada(self):
-        try:
-            with transaction.atomic():
-
-                AssinaturaService().cancelar_assinatura(self.assinatura)
-
-                self.__class__.objects.filter(pk=self.pk).update(
-                    vencimento_da_matricula = None,
-                    status_da_matricula = False
-                )
-
-                self.vencimento_da_matricula = None
-                self.status_da_matricula = False
-
-        except ValueError as e:
-            error_msg = f"A assinatura com o plano {Precos.get_text(Precos(self.tipo_do_plano))} para {self.aluno}, já está cancelada."
-            raise ValueError(error_msg) from e
-
-        except Exception as e:
-            print(e)
+        except ErroMatricula as e:
+            print(f"Erro inesperado: {e}")
 
     class Meta:
         verbose_name_plural = "Matrículas"
@@ -94,9 +74,9 @@ class Pagamento(models.Model):
     
     status_do_pagamento = models.CharField(
         max_length=255,
-        null=True,
-        blank=True,
-        default="Pendente",
+        choices=StatusPagamento.choices,
+        default=StatusPagamento.PENDENTE,
+        help_text="Status do pagamento.",
         verbose_name="status do pagamento")
     
     metodo_do_pagamento = models.CharField(
@@ -123,16 +103,16 @@ class Pagamento(models.Model):
                     vencimento_da_matricula = self.pagamento.data_da_matricula + timedelta(days=self.pagamento.tipo_do_plano)
                 )
 
-                self.status_do_pagamento = "Aprovado"
+                self.status_do_pagamento = StatusPagamento.APROVADO
 
                 super().save(*args, **kwargs)
             
-        except ValueError as e:
+        except ErroPagamento as e:
             error_msg = "Não é possível pagar esta assinatura."
-            raise ValueError(error_msg) from e
+            raise ErroPagamento(error_msg) from e
             
-        except Exception as e:
-            print(e)
+        except ErroMatricula as e:
+            print(f"Erro inesperado: {e}")
 
     def __str__(self):
         return f"{self.pagamento.aluno} - Plano: {Precos.get_text(Precos(self.pagamento.tipo_do_plano))} - Valor: R${Precos.get_preco(Precos(self.pagamento.tipo_do_plano))},00."
@@ -151,9 +131,27 @@ class CancelarMatricula(models.Model):
     
     def save(self, *args, **kwargs):
 
-        self.cancelamento.cancelar_assinatura_matriculada()
+        try:
+            with transaction.atomic():
 
-        super().save(*args, **kwargs)
+                AssinaturaService().cancelar_assinatura(self.cancelamento.assinatura)
+
+                Matricula.objects.filter(pk=self.cancelamento.pk).update(
+                    status_da_matricula = False,
+                    vencimento_da_matricula = None,
+                )
+
+                self.status_da_matricula = False
+                self.vencimento_da_matricula = None
+
+                super().save(*args, **kwargs)
+
+        except AssinaturaCancelada as e:
+            error_msg = f"A assinatura com o plano {Precos.get_text(Precos(self.cancelamento.tipo_do_plano))} para {self.cancelamento.aluno}, já está cancelada."
+            raise AssinaturaCancelada(error_msg) from e
+
+        except ErroMatricula as e:
+            print(f"Erro inesperado: {e}")
 
     def __str__(self):
         return f"{self.cancelamento.aluno}"
