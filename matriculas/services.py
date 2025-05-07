@@ -1,7 +1,9 @@
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 from efipay import EfiPay
 from core.settings import EFI_CONFIG
 from matriculas.enums import Precos
-from brutils.cep import remove_symbols
+from brutils.cep import remove_symbols, get_address_from_cep
 from .exceptions import *
 
 class AssinaturaService:
@@ -23,8 +25,10 @@ class AssinaturaService:
         
         raise AssinaturaExiste("Já existe uma assinatura ativa para este usuário")
     
-    def pagar_assinatura(self, assinatura_id, pagamento, endereco, numero):
-        body = self._metodo_de_pagamento(pagamento, endereco, numero)
+    def pagar_assinatura(self, assinatura_id, pagamento, data, numero):
+
+        body = self._metodo_de_pagamento_cartao(data, numero) if pagamento == 'credit_card' else self._metodo_de_pagamento_boleto(data)
+        
         status = self._assinatura_status(assinatura_id)
 
         if status == 'new':
@@ -32,7 +36,11 @@ class AssinaturaService:
             'id': assinatura_id  # ID da assinatura.
             }
 
-            EfiPay(EFI_CONFIG).define_subscription_pay_method(params=params, body=body)
+            response = self.efi.define_subscription_pay_method(params=params, body=body)
+
+            if response.get('code') == 3500034: # Algum erro de validação.
+                raise ErroPagamento("Não é possível pagar esta assinatura.")
+            
             return True
 
         raise ErroPagamento("Não é possível pagar esta assinatura.")
@@ -45,7 +53,7 @@ class AssinaturaService:
             'id': assinatura_id # ID da assinatura.
             }
 
-            EfiPay(EFI_CONFIG).cancel_subscription(params=params)
+            self.efi.cancel_subscription(params=params)
             return True
 
         raise AssinaturaCancelada("Essa assinatura já está cancelada.")
@@ -68,20 +76,23 @@ class AssinaturaService:
         body = {
             "items": [
                 {
-                    "name": "Assinatura recorrente academia",  # Nome do item.
+                    "name": "Assinatura Recorrente",  # Nome do item.
                     "value": Precos.get_preco(Precos(self.plano)) * 100, # Valor do item em centavos.
                     "amount": 1 # Quantidade do item.
                 }
             ]
         }
 
-        response = EfiPay(EFI_CONFIG).create_subscription(params=params, body=body)
+        response = self.efi.create_subscription(params=params, body=body)
         return response['data']['subscription_id']
         
-    def _metodo_de_pagamento(self, pagamento, endereco, numero):
+    def _metodo_de_pagamento_cartao(self, data, numero):
+
+        endereco = get_address_from_cep(data.get('endereco_cep'))
+        
         body = {
             "payment": {
-                f"{pagamento}": {
+                'credit_card': {
                     "payment_token": "ca7573a520799d0b90f0d4be5c2c309b2ee4069b",
                     "customer": {
                         "name": "Gorbadoc Oldbuck",
@@ -105,12 +116,31 @@ class AssinaturaService:
 
         return body
     
+    def _metodo_de_pagamento_boleto(self, data):
+
+        body = {
+            'payment': {
+                'banking_billet': {
+                    'expire_at': (timezone.now() + relativedelta(months=1)).strftime('%Y-%m-%d'),
+                    'customer': {
+                        'name': f'{data.get("nome")}',
+                        'email': f'{data.get("email")}',
+                        'cpf': f'{data.get("cpf")}',
+                        'birth': f'{data.get("data_de_nascimento")}',
+                        'phone_number': f'{data.get("telefone")}',
+                    }
+                }
+            }
+        }
+
+        return body
+    
     def _assinatura_status(self, assinatura_id):
         params = {
         'id': assinatura_id # ID da assinatura.
         }
 
-        response = EfiPay(EFI_CONFIG).detail_subscription(params=params)
+        response = self.efi.detail_subscription(params=params)
 
         if response.get("code") == 3500034:
             return 'ok' # -> Cenário onde não existe assinatura prévia (Matrícula sendo criada.)
@@ -122,5 +152,5 @@ class AssinaturaService:
         'id': assinatura_id # ID da assinatura.
         }
 
-        response = EfiPay(EFI_CONFIG).detail_subscription(params=params)
+        response = self.efi.detail_subscription(params=params)
         return response['data']['plan']['plan_id']

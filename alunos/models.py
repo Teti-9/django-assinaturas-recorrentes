@@ -5,12 +5,15 @@ from .utils import validar_cpf, validar_cep, validar_telefone, validar_email
 class Alunos(models.Model):
     nome = models.CharField(
         max_length=255,
-        validators=[RegexValidator(
-            regex='[a-zA-Z]',
-            message='Nome Inválido.'
-        )
+        validators=[
+            RegexValidator(
+                regex=r'^(?!.*[\u0600-\u06FF])\s*([a-zA-ZÀ-ÿ]+[\s]+)+[a-zA-ZÀ-ÿ]+\s*$',
+                message='Nome inválido. Deve conter nome e sobrenome (sem caracteres árabes).'
+            )
         ],
-        verbose_name="Nome do Aluno")
+        help_text='Deve conter nome e sobrenome (sem caracteres árabes).',
+        verbose_name="Nome do Aluno"
+    )
     
     cpf = models.CharField(
         max_length=11,
@@ -51,7 +54,7 @@ class Alunos(models.Model):
         return f"{self.nome} (ID: {self.id})"
     
     def save(self, *args, **kwargs):
-        self.nome = self.nome.capitalize()
+        self.nome = self.nome.title()
         super().save(*args, **kwargs)
 
     class Meta:

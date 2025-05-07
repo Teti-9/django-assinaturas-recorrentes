@@ -1,11 +1,11 @@
 from django.db import models, transaction
 from django.utils import timezone
+from datetime import timedelta
 from alunos.models import Alunos
+from alunos.utils import aluno_matriculado
+from matriculas.enums import Precos, MetodoPagamento, StatusPagamento
 from .services import AssinaturaService
 from .exceptions import *
-from matriculas.enums import Precos, MetodoPagamento, StatusPagamento
-from datetime import timedelta
-from alunos.utils import checar_aluno_matriculado
 
 class Matricula(models.Model):
     aluno = models.OneToOneField(
@@ -91,7 +91,7 @@ class Pagamento(models.Model):
     
     def save(self, *args, **kwargs):
 
-        data = checar_aluno_matriculado(self.pagamento.aluno.id, Alunos)
+        data = aluno_matriculado(self.pagamento.aluno.id, Alunos)
 
         try:
             with transaction.atomic():
@@ -109,6 +109,10 @@ class Pagamento(models.Model):
             
         except ErroPagamento as e:
             error_msg = "Não é possível pagar esta assinatura."
+            raise ErroPagamento(error_msg) from e
+        
+        except TypeError as e:
+            error_msg = "Erro na validação dos dados."
             raise ErroPagamento(error_msg) from e
             
         except ErroMatricula as e:

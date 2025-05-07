@@ -20,11 +20,8 @@ def validar_telefone(value):
 def validar_cep(value):
     if not cep.is_valid(value):
         raise ValidationError("CEP Inválido. Digite o CEP sem traços, exemplo: 12345678")
-    
-def dados_residenciais(value):
-    return get_address_from_cep(value)
 
-def checar_aluno_matriculado(id, model):
+def aluno_matriculado(id, model):
     aluno = get_object_or_404(
         model.objects.filter(matricula__assinatura__isnull=False),
         id=id
@@ -32,8 +29,7 @@ def checar_aluno_matriculado(id, model):
 
     aluno_dict = model_to_dict(
         aluno,
-        fields=['endereco_cep']
+        fields=['nome', 'email', 'cpf', 'data_de_nascimento', 'telefone', 'endereco_cep']
     )
 
-    data = dados_residenciais(aluno_dict.get('endereco_cep'))
-    return data
+    return aluno_dict
