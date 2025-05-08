@@ -11,8 +11,8 @@ class MatriculasAdmin(admin.ModelAdmin):
 
 @admin.register(Pagamento)
 class PagamentoAdmin(admin.ModelAdmin):
-    list_display = ('pagamento', 'status_do_pagamento', 'data_do_pagamento')
-    exclude = ('status_do_pagamento', 'data_do_pagamento')
+    list_display = ('plano_pago', 'status_do_pagamento', 'data_do_pagamento')
+    exclude = ('status_do_pagamento', 'data_do_pagamento', 'plano_pago')
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -22,8 +22,8 @@ class PagamentoAdmin(admin.ModelAdmin):
 
 @admin.register(CancelarMatricula)
 class CancelamentosAdmin(admin.ModelAdmin):
-    list_display = ('cancelamento', 'data_do_cancelamento')
-    exclude = ('data_do_cancelamento',)
+    list_display = ('plano_cancelado', 'data_do_cancelamento')
+    exclude = ('data_do_cancelamento', 'plano_cancelado')
 
     def has_delete_permission(self, request, obj=None):
         return False

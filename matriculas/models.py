@@ -11,12 +11,13 @@ class Matricula(models.Model):
     aluno = models.OneToOneField(
         Alunos, 
         on_delete=models.CASCADE,
+        help_text="Escolha o aluno a ser matrículado.",
         related_name='matricula')
     
     tipo_do_plano = models.IntegerField(
         choices=Precos.choices, 
         default=Precos.TRIMESTRAL, 
-        help_text="Escolha seu plano.", 
+        help_text="Escolha o plano.", 
         verbose_name="plano")
     
     plano = models.IntegerField(
@@ -38,9 +39,6 @@ class Matricula(models.Model):
     
     status_da_matricula = models.BooleanField(
         default=False)
-    
-    def __str__(self):
-        return f"{self.aluno} - Matrícula: {self.id} - Plano: {Precos.get_text(Precos(self.tipo_do_plano))} - Valor: R${Precos.get_preco(Precos(self.tipo_do_plano))},00."
 
     def save(self, *args, **kwargs):
             
@@ -63,6 +61,9 @@ class Matricula(models.Model):
         except ErroMatricula as e:
             print(f"Erro inesperado: {e}")
 
+    def __str__(self):
+        return f"{self.aluno} - Matrícula: {self.id} - Plano: {Precos.get_text(Precos(self.tipo_do_plano))} - Valor: R${Precos.get_preco(Precos(self.tipo_do_plano))},00."
+
     class Meta:
         verbose_name_plural = "Matrículas"
 
@@ -70,7 +71,14 @@ class Pagamento(models.Model):
     pagamento = models.ForeignKey(
         Matricula,
         on_delete=models.CASCADE, 
+        help_text="Escolha a matrícula a ser paga.",
         related_name='pagamento')
+    
+    plano_pago = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="plano pago")
     
     status_do_pagamento = models.CharField(
         max_length=255,
@@ -105,6 +113,8 @@ class Pagamento(models.Model):
 
                 self.status_do_pagamento = StatusPagamento.APROVADO
 
+                self.plano_pago = f"{self.pagamento.aluno} - Plano: {Precos.get_text(Precos(self.pagamento.tipo_do_plano))} - Valor: R${Precos.get_preco(Precos(self.pagamento.tipo_do_plano))},00."
+
                 super().save(*args, **kwargs)
             
         except ErroPagamento as e:
@@ -117,9 +127,6 @@ class Pagamento(models.Model):
             
         except ErroMatricula as e:
             print(f"Erro inesperado: {e}")
-
-    def __str__(self):
-        return f"{self.pagamento.aluno} - Plano: {Precos.get_text(Precos(self.pagamento.tipo_do_plano))} - Valor: R${Precos.get_preco(Precos(self.pagamento.tipo_do_plano))},00."
     
     class Meta:
         verbose_name_plural = "Pagamento"
@@ -127,8 +134,15 @@ class Pagamento(models.Model):
 class CancelarMatricula(models.Model):
     cancelamento = models.ForeignKey(
         Matricula,
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        help_text="Escolha a matrícula a ser cancelada.", 
         related_name='cancelamento')
+    
+    plano_cancelado = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="plano cancelado")
     
     data_do_cancelamento = models.DateTimeField(
         auto_now_add=True)
@@ -148,6 +162,8 @@ class CancelarMatricula(models.Model):
                 self.status_da_matricula = False
                 self.vencimento_da_matricula = None
 
+                self.plano_cancelado = f"{self.cancelamento.aluno} - Plano: {Precos.get_text(Precos(self.cancelamento.tipo_do_plano))} - Valor: R${Precos.get_preco(Precos(self.cancelamento.tipo_do_plano))},00."
+
                 super().save(*args, **kwargs)
 
         except AssinaturaCancelada as e:
@@ -156,9 +172,6 @@ class CancelarMatricula(models.Model):
 
         except ErroMatricula as e:
             print(f"Erro inesperado: {e}")
-
-    def __str__(self):
-        return f"{self.cancelamento.aluno}"
 
     class Meta:
         verbose_name_plural = "Cancelamento de Matrícula"

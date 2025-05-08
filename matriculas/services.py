@@ -18,7 +18,7 @@ class AssinaturaService:
         
         if status == 'canceled' or status == 'ok':
             self.plano = plano
-            plano_id = self._criar_plano(plano)
+            plano_id = self._criar_plano()
             assinatura_id = self._criar_assinatura(plano_id)
             
             return (plano_id, assinatura_id)
@@ -58,11 +58,11 @@ class AssinaturaService:
 
         raise AssinaturaCancelada("Essa assinatura já está cancelada.")
     
-    def _criar_plano(self, plano):
+    def _criar_plano(self):
         body_plan = {
-            "name": f'Plano Academia - {Precos.get_text(Precos(plano))}', # Nome do plano.
+            "name": f'Plano Academia - {Precos.get_text(Precos(self.plano))}', # Nome do plano.
             "interval": 1, # De quanto em quanto tempo será cobrado.
-            "repeats": Precos.get_repeats(Precos(plano)), # Quantas vezes será cobrado.
+            "repeats": Precos.get_repeats(Precos(self.plano)), # Quantas vezes será cobrado.
         }
 
         response = self.efi.create_plan(body=body_plan)
@@ -76,7 +76,7 @@ class AssinaturaService:
         body = {
             "items": [
                 {
-                    "name": "Assinatura Recorrente",  # Nome do item.
+                    "name": f'Plano Academia - {Precos.get_text(Precos(self.plano))}', # Nome do plano.
                     "value": Precos.get_preco(Precos(self.plano)) * 100, # Valor do item em centavos.
                     "amount": 1 # Quantidade do item.
                 }
